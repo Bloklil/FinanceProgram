@@ -7,9 +7,10 @@ import FinanceManager.FinanceProgram.Entity.Transaction;
 import FinanceManager.FinanceProgram.Repository.AccountRepository;
 import FinanceManager.FinanceProgram.Repository.CategoryRepository;
 import FinanceManager.FinanceProgram.Repository.TransactionRepository;
-import FinanceManager.FinanceProgram.TransactionType;
+import FinanceManager.FinanceProgram.Entity.TransactionType;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -99,4 +100,23 @@ public class FinanceService {
                 ))
                 .toList();
     }
+
+    // Сумма расходов по категории
+    public double getExpensesByCategory(Long categoryId) {
+        return transactionRepo.findAll()
+                .stream()
+                .filter(t -> t.getCategory().getId().equals(categoryId) && t.getType() == TransactionType.EXPENSE)
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+    }
+
+    // Сумма доходов/расходов за период
+    public double getTotalByTypeAndPeriod(TransactionType type, LocalDate from, LocalDate to) {
+        return transactionRepo.findAll()
+                .stream()
+                .filter(t -> t.getType() == type && !t.getDate().isBefore(from) && !t.getDate().isAfter(to))
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+    }
+
 }

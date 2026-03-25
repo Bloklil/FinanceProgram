@@ -13,7 +13,7 @@ public class Transaction {
     private double amount;
 
     @Enumerated(EnumType.STRING)
-    private FinanceManager.FinanceProgram.TransactionType type;
+    private TransactionType type;
 
     @ManyToOne
     private Category category;
@@ -25,7 +25,7 @@ public class Transaction {
 
     public Transaction() {}
 
-    public Transaction(double amount, Category category, Account account, FinanceManager.FinanceProgram.TransactionType type) {
+    public Transaction(double amount, Category category, Account account, TransactionType type) {
         this.amount = amount;
         this.category = category;
         this.account = account;
@@ -36,8 +36,8 @@ public class Transaction {
     public double getAmount() { return amount; }
     public void setAmount(double amount) { this.amount = amount; }
 
-    public FinanceManager.FinanceProgram.TransactionType getType() { return type; }
-    public void setType(FinanceManager.FinanceProgram.TransactionType type) { this.type = type; }
+    public TransactionType getType() { return type; }
+    public void setType(TransactionType type) { this.type = type; }
 
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }

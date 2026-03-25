@@ -1,19 +1,18 @@
 package FinanceManager.FinanceProgram.Controller;
 
-import FinanceManager.FinanceProgram.DTO.AccountRequest;
-import FinanceManager.FinanceProgram.DTO.AccountResponse;
-import FinanceManager.FinanceProgram.DTO.CategoryRequest;
-import FinanceManager.FinanceProgram.DTO.CategoryResponse;
-import FinanceManager.FinanceProgram.DTO.TransactionRequest;
-import FinanceManager.FinanceProgram.DTO.TransactionResponse;
+import FinanceManager.FinanceProgram.DTO.*;
 import FinanceManager.FinanceProgram.Service.FinanceService;
-import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "Финансы", description = "Операции управления финансами")
+@Tag(name = "Финансы", description = "Управление счетами, категориями и транзакциями")
 @RestController
 @RequestMapping("/api")
 public class FinanceController {
@@ -24,9 +23,13 @@ public class FinanceController {
         this.service = service;
     }
 
-    @Operation(summary = "Создать новый счет")
+    // ---------------- Accounts ----------------
+    @Operation(summary = "Создать новый счет", description = "Создает новый счет для пользователя")
     @PostMapping("/accounts")
-    public AccountResponse createAccount(@RequestBody AccountRequest request) {
+    public AccountResponse createAccount(
+            @Valid
+            @RequestBody AccountRequest request
+    ) {
         return service.createAccount(request);
     }
 
@@ -36,9 +39,13 @@ public class FinanceController {
         return service.getAccounts();
     }
 
+    // ---------------- Categories ----------------
     @Operation(summary = "Создать категорию")
     @PostMapping("/categories")
-    public CategoryResponse createCategory(@RequestBody CategoryRequest request) {
+    public CategoryResponse createCategory(
+            @Valid
+            @RequestBody CategoryRequest request
+    ) {
         return service.createCategory(request);
     }
 
@@ -48,9 +55,13 @@ public class FinanceController {
         return service.getCategories();
     }
 
+    // ---------------- Transactions ----------------
     @Operation(summary = "Добавить транзакцию")
     @PostMapping("/transactions")
-    public TransactionResponse addTransaction(@RequestBody TransactionRequest request) {
+    public TransactionResponse addTransaction(
+            @Valid
+            @RequestBody TransactionRequest request
+    ) {
         return service.addTransaction(request);
     }
 
@@ -58,5 +69,11 @@ public class FinanceController {
     @GetMapping("/transactions")
     public List<TransactionResponse> getTransactions() {
         return service.getTransactions();
+    }
+
+
+    @GetMapping("/analytics/expenses")
+    public double getExpenses(@RequestParam Long categoryId) {
+        return service.getExpensesByCategory(categoryId);
     }
 }

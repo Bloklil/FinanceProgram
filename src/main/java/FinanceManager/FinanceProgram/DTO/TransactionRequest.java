@@ -1,6 +1,6 @@
 package FinanceManager.FinanceProgram.DTO;
 
-import FinanceManager.FinanceProgram.TransactionType;
+import FinanceManager.FinanceProgram.Entity.TransactionType;
 
 public class TransactionRequest {
     private Long accountId;
