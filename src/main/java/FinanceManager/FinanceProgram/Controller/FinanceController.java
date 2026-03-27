@@ -1,6 +1,8 @@
 package FinanceManager.FinanceProgram.Controller;
 
 import FinanceManager.FinanceProgram.DTO.*;
+import FinanceManager.FinanceProgram.Entity.Account;
+import FinanceManager.FinanceProgram.Entity.TransactionType;
 import FinanceManager.FinanceProgram.Service.FinanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,6 +35,15 @@ public class FinanceController {
         return service.createAccount(request);
     }
 
+    @Operation(summary = "Обновить счет")
+    @PutMapping("/accounts/{id}")
+    public AccountResponse updateAccount(
+            @PathVariable Long id,
+            @Valid @RequestBody AccountRequest request
+    ) {
+        return service.updateAccount(id, request);
+    }
+
     @Operation(summary = "Получить все счета")
     @GetMapping("/accounts")
     public List<AccountResponse> getAccounts() {
@@ -53,6 +64,15 @@ public class FinanceController {
     @GetMapping("/categories")
     public List<CategoryResponse> getCategories() {
         return service.getCategories();
+    }
+
+    @Operation(summary = "Обновить категорию")
+    @PutMapping("/categories/{id}")
+    public CategoryResponse updateCategory(
+            @PathVariable Long id,
+            @Valid @RequestBody CategoryRequest request
+    ) {
+        return service.updateCategory(id, request);
     }
 
     // ---------------- Transactions ----------------
@@ -76,4 +96,44 @@ public class FinanceController {
     public double getExpenses(@RequestParam Long categoryId) {
         return service.getExpensesByCategory(categoryId);
     }
+
+    @Operation(summary = "Удалить счет")
+    @DeleteMapping("/accounts/{id}")
+    public void deleteAccount(@PathVariable Long id) {
+        service.deleteAccount(id);
+    }
+
+    @Operation(summary = "Удалить категорию")
+    @DeleteMapping("/categories/{id}")
+    public void deleteCategory(@PathVariable Long id) {
+        service.deleteCategory(id);
+    }
+
+    @Operation(summary = "Общий баланс по всем счетам")
+    @GetMapping("/analytics/balance")
+    public double getTotalBalance() {
+        return service.getTotalBalance();
+    }
+
+    @Operation(summary = "Аналитика по месяцам")
+    @GetMapping("/analytics/month")
+    public double getMonthlyAnalytics(
+            @RequestParam int year,
+            @RequestParam int month,
+            @RequestParam TransactionType type
+    ) {
+        return service.getMonthlyTotal(year, month, type);
+    }
+
+    @Operation(summary = "Удалить транзакцию")
+    @DeleteMapping("/transactions/{id}")
+    public void deleteTransaction(@PathVariable Long id) {
+        service.deleteTransaction(id);
+    }
+
+    @GetMapping("/analytics/monthly")
+    public List<MonthlyStats> getMonthlyStats() {
+        return service.getMonthlyStats();
+    }
+
 }

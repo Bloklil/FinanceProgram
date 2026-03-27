@@ -9,9 +9,13 @@ import FinanceManager.FinanceProgram.Repository.CategoryRepository;
 import FinanceManager.FinanceProgram.Repository.TransactionRepository;
 import FinanceManager.FinanceProgram.Entity.TransactionType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class FinanceService {
@@ -117,6 +121,98 @@ public class FinanceService {
                 .filter(t -> t.getType() == type && !t.getDate().isBefore(from) && !t.getDate().isAfter(to))
                 .mapToDouble(Transaction::getAmount)
                 .sum();
+    }
+
+    public void deleteAccount(Long id) {
+        Account account = accountRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Аккаунт не найден"));
+
+        accountRepo.delete(account);
+    }
+
+    public void deleteCategory(Long id) {
+        Category category = categoryRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Категория не найдена"));
+
+        categoryRepo.delete(category);
+    }
+
+    public double getTotalBalance() {
+        return accountRepo.findAll()
+                .stream()
+                .mapToDouble(Account::getBalance)
+                .sum();
+    }
+
+    public double getMonthlyTotal(int year, int month, TransactionType type) {
+
+        return transactionRepo.findAll()
+                .stream()
+                .filter(t -> t.getType() == type)
+                .filter(t -> t.getDate().getYear() == year)
+                .filter(t -> t.getDate().getMonthValue() == month)
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+    }
+
+    public void deleteTransaction(Long id) {
+
+        Transaction transaction = transactionRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Транзакция не найдена"));
+
+        Account account = transaction.getAccount();
+
+        if (transaction.getType() == TransactionType.INCOME) {
+            account.withdraw(transaction.getAmount());
+        } else {
+            account.deposit(transaction.getAmount());
+        }
+
+        accountRepo.save(account);
+        transactionRepo.delete(transaction);
+    }
+
+    public List<MonthlyStats> getMonthlyStats() {
+
+        List<Transaction> transactions = transactionRepo.findAll();
+
+        Map<String, MonthlyStats> map = new HashMap<>();
+
+        for (Transaction t : transactions) {
+
+            String month = t.getDate().getMonth().toString();
+
+            map.putIfAbsent(month, new MonthlyStats(month, 0, 0));
+
+            MonthlyStats stats = map.get(month);
+
+            if (t.getType() == TransactionType.INCOME) {
+                stats = new MonthlyStats(month, stats.getIncome() + t.getAmount(), stats.getExpense());
+            } else {
+                stats = new MonthlyStats(month, stats.getIncome(), stats.getExpense() + t.getAmount());
+            }
+
+            map.put(month, stats);
+        }
+
+        return new ArrayList<>(map.values());
+    }
+
+    @Transactional
+    public AccountResponse updateAccount(Long id, AccountRequest request) {
+        Account account = accountRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Счет не найден"));
+        account.setName(request.getName());
+        account.setBalance(request.getBalance());
+        return new AccountResponse(account.getId(), account.getName(), account.getBalance());
+    }
+
+    @Transactional
+    public CategoryResponse updateCategory(Long id, CategoryRequest request) {
+        Category category = categoryRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Категория не найдена"));
+        category.setName(request.getName());
+        return new CategoryResponse(category.getId(), category.getName());
     }
 
 }
