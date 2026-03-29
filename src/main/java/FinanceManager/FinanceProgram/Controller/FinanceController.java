@@ -136,4 +136,13 @@ public class FinanceController {
         return service.getMonthlyStats();
     }
 
+    @Operation(summary = "Обновить транзакцию", description = "Редактирует сумму, дату, счет, категорию и тип транзакции")
+    @PutMapping("/transactions/{id}")
+    public TransactionResponse updateTransaction(
+            @PathVariable Long id,
+            @Valid @RequestBody TransactionRequest request
+    ) {
+        return service.updateTransaction(id, request);
+    }
+
 }

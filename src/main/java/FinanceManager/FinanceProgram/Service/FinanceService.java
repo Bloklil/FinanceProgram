@@ -215,4 +215,47 @@ public class FinanceService {
         return new CategoryResponse(category.getId(), category.getName());
     }
 
+    @Transactional
+    public TransactionResponse updateTransaction(Long id, TransactionRequest request) {
+        Transaction transaction = transactionRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Транзакция не найдена"));
+
+        Account oldAccount = transaction.getAccount();
+        if (transaction.getType() == TransactionType.INCOME) {
+            oldAccount.withdraw(transaction.getAmount());
+        } else {
+            oldAccount.deposit(transaction.getAmount());
+        }
+        accountRepo.save(oldAccount);
+
+        Account newAccount = accountRepo.findById(request.getAccountId())
+                .orElseThrow(() -> new RuntimeException("Аккаунт не найден"));
+        Category newCategory = categoryRepo.findById(request.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Категория не найдена"));
+
+        transaction.setAmount(request.getAmount());
+        transaction.setDate(request.getDate());
+        transaction.setAccount(newAccount);
+        transaction.setCategory(newCategory);
+        transaction.setType(request.getType());
+
+        if (request.getType() == TransactionType.INCOME) {
+            newAccount.deposit(request.getAmount());
+        } else {
+            newAccount.withdraw(request.getAmount());
+        }
+        accountRepo.save(newAccount);
+
+        Transaction saved = transactionRepo.save(transaction);
+
+        return new TransactionResponse(
+                saved.getId(),
+                saved.getAmount(),
+                saved.getType(),
+                saved.getCategory().getName(),
+                saved.getAccount().getName(),
+                saved.getDate()
+        );
+    }
+
 }
